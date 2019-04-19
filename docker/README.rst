@@ -20,6 +20,9 @@ Library Configuration Options
    :header: "Field", "Description", "Default Value"
 
    "build_strategy", "This defines the type of docker build to be used. There are three options to choose from; docker-compose, modules, and dockerfile", "dockerfile"
+   "registry", "This sets the target registry to which built Docker images will be pushed", "none"
+   "cred", "The ID of the Jenkins Credential containing a username/password to access the target registry", "none"
+   "repo_path_prefix", "Selects the folder, or base path, of the registry names for built images", "empty string"
 
 Example Configuration Snippet
 =============================
@@ -28,22 +31,12 @@ Example Configuration Snippet
 
    libraries{
      docker {
-        build_strategy = docker-compose | modules | dockerfile
+        build_strategy = "modules"
+        registry = "docker-registry.default.svc:5000"
+        repo_path_prefix = "my-project"
+        cred = "docker-registry"
      }
    }
-
-Extra Configurations
-====================
-
-If you are using a separate set of credentials change the variables listed below inside the configuration file.
-
-.. csv-table::  Docker Extra Configuration Options
-   :header: "Field", "Description", "Default Value"
-
-   "sdp.image.registry", "The location where the container images required for the different pipeline tools are stored.", "none"
-   "sdp.image.cred", "Credentials used for the repository where pipeline builds are going to be pushed to", "none"
-   "docker.registry", "Where the container images produced during the pipeline builds are going to be pushed to", "none"
-   "docker.cred", "Credentials used for the repository where different docker pipeline tools are stored.", "none"
 
 External Dependencies
 =====================
@@ -56,3 +49,6 @@ Troubleshooting
 
 FAQ
 ===
+
+**Q: ** How are the images tagged?
+**A: ** docker image name = registry + "/" + repo_path_prefix + "/" + *source repo name* + ":" + *GIT SHA*
