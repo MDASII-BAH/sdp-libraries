@@ -50,5 +50,6 @@ Troubleshooting
 FAQ
 ===
 
-**Q: ** How are the images tagged?
-**A: ** docker image name = registry + "/" + repo_path_prefix + "/" + *source repo name* + ":" + *GIT SHA*
+**Q:**  How are the images tagged?
+
+**A:**  docker image name = registry + "/" + repo_path_prefix + "/" + *source repository name* + ":" + *GIT SHA*
