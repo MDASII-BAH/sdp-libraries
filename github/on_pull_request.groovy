@@ -31,7 +31,7 @@ void call(Map args = [:], body){
 }
 
 def get_source_branch(){
-  def ghUrl = "${env.GIT_URL.split("/")[0..-3].join("/")}/api/v3"
+  def ghUrl = "https://api.github.com"
   def repo
   def org
   def cred_id = env.GIT_CREDENTIAL_ID
