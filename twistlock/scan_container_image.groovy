@@ -21,7 +21,7 @@ def call() {
                 // for now .. just docker
                 def images = ""
                 get_images_to_build().each { img ->
-                  image = "${img.registry}/${img.repo}:${img.tag} " //The trailing space is intentional
+                  image = "${img.registry}/${img.repo.toLowerCase()}:${img.tag} " //The trailing space is intentional
                   sh "docker pull ${image}"
                   images += image
                 }
@@ -57,8 +57,8 @@ void get_twistcli() {
 
 String do_scan(images) {
     def output = sh(
-            script: "twistcli images scan --details --upload --address ${config.url} -u ${user} -p '${pass}' ${images}",
-            returnStdout: true
+        script: "twistcli images scan --details --upload --address ${config.url} -u ${user} -p '${pass}' ${images}",
+        returnStdout: true
     ).trim()
 
     return (output =~ /Results at: (.*)$/)[0][1]

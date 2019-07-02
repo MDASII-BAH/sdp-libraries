@@ -11,13 +11,16 @@ void call(app_env){
     def config_repo = app_env.helm_configuration_repository ?:
                       config.helm_configuration_repository  ?:
                       {error "helm_configuration_repository not defined in library config or application environment config"}()
+    def config_repo_branch = app_env.helm_configuration_repository_branch ?:
+                             config.helm_configuration_repository_branch  ?:
+                             {error "helm_configuration_repository_branch not defined in library config or application environment config"}()
 
     // jenkins credential ID for user to access config repo
     // definable in library spec or app env spec via "helm_configuration_repository_credential"
     // or - a globally defined github credential at the root of the pipeline config "github_credential"
     def git_cred = app_env.helm_configuration_repository_credential ?:
                    config.helm_configuration_repository_credential  ?:
-                   pipelineConfig.github_credential              ?:
+                   pipelineConfig.github_credential                 ?:
                    {error "GitHub Credential For Configuration Repository Not Defined"}()
 
     /*
@@ -51,9 +54,8 @@ void call(app_env){
        will fail otherwise.
     */
     def release = app_env.tiller_release_name ?:
-                  app_env.short_name          ?:
+                  app_env.short_name          ? (config.app_name + '-' + env.BRANCH_NAME + '-' + app_env.short_name).toLowerCase() :
                   {error "App Env Must Specify tiller_release_name or short_name"}()
-
 
     /*
        values file to be used when deploying chart
@@ -65,7 +67,6 @@ void call(app_env){
                       app_env.short_name ? "values.${app_env.short_name}.yaml" :
                       {error "Values File To Use For This Chart Not Defined"}()
 
-
     /*
        if this is a merge commit we need to retag the image so that the sha
        referenced in the values file represents the merge commit rather than
@@ -75,30 +76,31 @@ void call(app_env){
         NOTE: this puts a dependency on the docker library (or whatever image building library
         is used.  this library must supply a retag method)
     */
-    def promote_image = app_env.promote_previous_image != null ? app_env.promote_previous_image :
-                        config.promote_previous_image != null ? config.promote_previous_image :
-                        true
-    if (!(promote_image instanceof Boolean)){
-      error "OpenShift Library expects 'promote_previous_image' configuration to be true or false."
-    }
+    // def promote_image = app_env.promote_previous_image != null ? app_env.promote_previous_image :
+    //                     config.promote_previous_image != null ? config.promote_previous_image :
+    //                     true
+    // if (!(promote_image instanceof Boolean)){
+    //   error "OpenShift Library expects 'promote_previous_image' configuration to be true or false."
+    // }
 
-    if (promote_image){
-      if (env.FEATURE_SHA){
-        retag(env.FEATURE_SHA, env.GIT_SHA)
-      }
-    } else{
-      echo "expecting image was already built"
-    }
+    // if (promote_image){
+    //   if (env.FEATURE_SHA){
+    //     retag(env.FEATURE_SHA, env.GIT_SHA)
+    //   }
+    // } else{
+    //   echo "expecting image was already built"
+    // }
 
-
-    withGit url: config_repo, cred: git_cred, {
+    withGit url: config_repo, branch: config_repo_branch, cred: git_cred, {
       inside_sdp_image "openshift_helm", {
-        withCredentials([usernamePassword(credentialsId: tiller_credential, passwordVariable: 'token', usernameVariable: 'user')]) {
+        withCredentials([string(credentialsId: tiller_credential, variable: 'token')]) {
           withEnv(["TILLER_NAMESPACE=${tiller_namespace}"]) {
-            this.update_values_file( values_file, config_repo )
-            this.oc_login ocp_url, token
-            this.do_release release, values_file
-            this.push_config_update values_file
+            dir("charts") {
+              this.update_values_file( values_file, config_repo )
+              this.oc_login ocp_url, token
+              this.do_release release, values_file
+              // this.push_config_update values_file
+            }
           }
         }
       }
@@ -111,10 +113,20 @@ void update_values_file(values_file, config_repo){
     error "Values File ${values_file} does not exist in ${config_repo}"
 
   values = readYaml file: values_file
-  key = env.REPO_NAME.replaceAll("-","_")
-  echo "writing new Git SHA ${env.GIT_SHA} to image_shas.${key} in ${values_file}"
-  values.image_shas[key] = env.GIT_SHA
+
+  // key = env.REPO_NAME.replaceAll("-","_")
+  // echo "writing new Git SHA ${env.GIT_SHA} to image_shas.${key} in ${values_file}"
+  // values.image_shas[key] = env.GIT_SHA
+
+  // update appNmae
+  values.appName = (config.app_name + "-" + env.BRANCH_NAME).toLowerCase()
+  // update imageTag
+  values.imageTag = env.GIT_SHA 
+
   sh "rm ${values_file}"
+
+  echo "${values}"
+
   writeYaml file: values_file, data: values
 
 }
