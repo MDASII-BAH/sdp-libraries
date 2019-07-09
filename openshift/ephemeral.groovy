@@ -9,8 +9,12 @@ void call(app_env, Closure body){
 
         // configuration repository storing the chart
         def config_repo = app_env.helm_configuration_repository ?:
-                config.helm_configuration_repository  ?:
-                        {error "helm_configuration_repository not defined in library config or application environment config"}()
+                          config.helm_configuration_repository  ?:
+                          {error "helm_configuration_repository not defined in library config or application environment config"}()
+
+        def config_repo_branch = app_env.helm_configuration_repository_branch ?:
+                                 config.helm_configuration_repository_branch  ?:
+                                 {error "helm_configuration_repository_branch not defined in library config or application environment config"}()
 
         // jenkins credential ID for user to access config repo
         // definable in library spec or app env spec via "helm_configuration_repository_credential"
@@ -57,8 +61,8 @@ void call(app_env, Closure body){
         def image_repo_project = config.image_repository_project ?:
                                  {error "You must define image_repository_project where images are pushed" }()
 
-        withGit url: config_repo, cred: git_cred, {
-            withCredentials([usernamePassword(credentialsId: tiller_credential, passwordVariable: 'token', usernameVariable: 'user')]) {
+        withGit url: config_repo, branch: config_repo_branch, cred: git_cred, {
+            withCredentials([string(credentialsId: tiller_credential, variable: 'token')]) {
                 withEnv(["TILLER_NAMESPACE=${tiller_namespace}"]) {
                     def project
                     def release_env = [:]
@@ -93,9 +97,16 @@ void update_values_file(values_file){
         error "Values File ${values_file} does not exist in the given Helm configuration repo"
 
     values = readYaml file: values_file
-    repo = env.REPO_NAME.replaceAll("-","_")
-    echo "writing new Git SHA ${env.GIT_SHA} to image_shas.${repo} in ${values_file}"
-    values.image_shas[repo] = env.GIT_SHA
+
+    // repo = env.REPO_NAME.replaceAll("-","_")
+    // echo "writing new Git SHA ${env.GIT_SHA} to image_shas.${repo} in ${values_file}"
+    // values.image_shas[repo] = env.GIT_SHA
+
+    // update appNmae
+    values.appName = config.app_name + env.BRANCH_NAME
+    // update imageTag
+    values.image_shas["imageTag"] = env.GIT_SHA 
+
     values.is_ephemeral = true
     sh "rm ${values_file}"
     writeYaml file: values_file, data: values
