@@ -64,7 +64,7 @@ void call(app_env){
        otherwise - will fail
     */
     def values_file = app_env.chart_values_file ?:
-                      app_env.short_name ? "values.${app_env.short_name}.yaml" :
+                      app_env.short_name ? "values-${app_env.short_name}.yaml" :
                       {error "Values File To Use For This Chart Not Defined"}()
 
     /*
@@ -92,9 +92,9 @@ void call(app_env){
     // }
 
     withGit url: config_repo, branch: config_repo_branch, cred: git_cred, {
-      inside_sdp_image "openshift_helm", {
-        withCredentials([string(credentialsId: tiller_credential, variable: 'token')]) {
-          withEnv(["TILLER_NAMESPACE=${tiller_namespace}"]) {
+      withCredentials([string(credentialsId: tiller_credential, variable: 'token')]) {
+        withEnv(["TILLER_NAMESPACE=${tiller_namespace}"]) {
+          inside_sdp_image "openshift_helm", {
             dir("charts") {
               this.update_values_file( values_file, config_repo )
               this.oc_login ocp_url, token
@@ -124,11 +124,8 @@ void update_values_file(values_file, config_repo){
   values.imageTag = env.GIT_SHA 
 
   sh "rm ${values_file}"
-
   echo "${values}"
-
   writeYaml file: values_file, data: values
-
 }
 
 void do_release(release, values_file){
