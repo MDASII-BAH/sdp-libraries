@@ -4,7 +4,7 @@ void call(Map params = [:] ){
 
   params.bucket = config.bucket ?: params.bucket
 
-  withAWS(credentials:'AwsBsdo') {
+  withAWS(credentials:'AwsBsdo', region: 'us-east-1') {
     s3Upload(params)
   }
 
