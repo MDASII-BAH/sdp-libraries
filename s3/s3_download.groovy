@@ -4,7 +4,7 @@ void call(Map params = [:] ){
 
   params.bucket = config.bucket ?: params.bucket
 
-  withAws(credentials:'AwsBsdo') {
+  withAWS(credentials:'AwsBsdo') {
     s3Download(params)
   }
 
