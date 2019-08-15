@@ -13,6 +13,7 @@ Steps provided
 -- s3_download()
 -- s3_copy()
 -- s3_delete()
+-- s3_object_exists()
 
 ===============
 Example Snippet
