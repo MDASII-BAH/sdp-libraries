@@ -1,11 +1,8 @@
 void call(Map params = [:] ){
-  def url = config.url
-  def bucket = config.bucket
-  def region = config.region ?: params.region
-
   params.bucket = config.bucket ?: params.bucket
 
-  def awsConfig = [credentials: 'AwsBsdo']
+  def awsConfig = [:]
+  awsConfig.credentials = config.credentials ?: params.credentials
   awsConfig.region = config.region ?: params.region
 
   withAWS(awsConfig) {
