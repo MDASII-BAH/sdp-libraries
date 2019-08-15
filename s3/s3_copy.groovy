@@ -1,5 +1,6 @@
 void call(Map params = [:]){
-  params.bucket = config.bucket ?: params.bucket
+  params.toBucket = params.toBucket ?: config.bucket
+  params.fromBucket = params.fromBucket ?: config.bucket
 
   def awsConfig = [:]
   awsConfig.credentials = config.credentials ?: params.credentials
