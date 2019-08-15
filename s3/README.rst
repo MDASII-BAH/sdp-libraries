@@ -11,6 +11,8 @@ Steps provided
 
 -- s3_upload()
 -- s3_download()
+-- s3_copy()
+-- s3_delete()
 
 ===============
 Example Snippet
@@ -19,8 +21,9 @@ Example Snippet
 
   libraries{
     s3{
-      url: "http://aws.bah.com/
-      bucket: "bdso"
+      credentials = "AwsAccount"
+      region = "us-east-1"
+      bucket = "bucket-0"
 
     }
   }
@@ -30,7 +33,7 @@ Example Snippet
 Configurations
 ==============
 
-.. csv-table::  Docker Configuration Options
+.. csv-table::  S3 Configuration Options
    :header: "Field", "Description", "Default Value", "Required"
 
 =====================
