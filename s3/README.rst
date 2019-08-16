@@ -37,6 +37,7 @@ Configurations
 
 .. csv-table::  S3 Configuration Options
    :header: "Field", "Description", "Default Value", "Required"
+
    "credentials", "the id for the jenkins credential to be used", null, "true"
    "region", "the AWS region to be used", null, "true"
    "bucket", "the S3 bucket to be used", null, "true"
