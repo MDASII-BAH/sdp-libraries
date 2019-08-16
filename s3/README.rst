@@ -3,18 +3,19 @@
 S3
 --
 
-The S3 library to connect to AWS S3 buckets
+The S3 library to connect to AWS S3 buckets.  See https://github.com/jenkinsci/pipeline-aws-plugin for parameters to steps.
+
 
 ==============
 Steps provided
 ==============
 
-* s3_upload()
-* s3_download()
-* s3_copy()
-* s3_delete()
-* s3_object_exists()
-* s3_find_files()
+* s3_upload(Map args)
+* s3_download(Map args)
+* s3_copy(Map args); toBucket and fromBucket arguments default to config.bucket
+* s3_delete(Map args)
+* s3_object_exists(Map args)
+* s3_find_files(Map args)
 
 ===============
 Example Snippet
