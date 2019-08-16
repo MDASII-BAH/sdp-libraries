@@ -3,7 +3,7 @@
 S3
 --
 
-The S3 library to connect to AWS S3 buckets.  See https://github.com/jenkinsci/pipeline-aws-plugin for parameters to steps.
+The S3 library to connect to AWS S3 buckets.  See https://github.com/jenkinsci/pipeline-aws-plugin for parameters to the equivalent steps.
 
 
 ==============
